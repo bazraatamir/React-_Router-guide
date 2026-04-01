@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React Router — Оюутны гарын авлага</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0e14;
+  --bg2: #13151f;
+  --bg3: #1a1d2e;
+  --border: #252840;
+  --text: #e8eaf6;
+  --muted: #7b7f9e;
+  --accent: #6c63ff;
+  --accent2: #00e5a0;
+  --accent3: #ff6b6b;
+  --accent4: #ffd166;
+  --code-bg: #0d0f1a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ── Background grid ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(108,99,255,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108,99,255,.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 24px 100px;
+}
+
+/* ── Hero ── */
+.hero {
+  text-align: center;
+  padding: 80px 0 60px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(108,99,255,.15);
+  border: 1px solid rgba(108,99,255,.35);
+  color: #a89eff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 28px;
+  letter-spacing: .05em;
+}
+
+.hero-badge span { width:7px; height:7px; background:#6c63ff; border-radius:50%; animation: pulse 1.8s ease-in-out infinite; }
+
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  margin-bottom: 20px;
+}
+
+h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, #6c63ff, #00e5a0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  color: var(--muted);
+  font-size: 1.05rem;
+  font-weight: 300;
+  max-width: 520px;
+  margin: 0 auto 48px;
+}
+
+/* ── TOC pills ── */
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 80px;
+}
+
+.toc a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 7px 14px;
+  border-radius: 8px;
+  transition: all .2s;
+}
+
+.toc a:hover { border-color: var(--accent); color: var(--text); background: rgba(108,99,255,.1); }
+.toc-num { color: var(--accent); font-weight: 700; }
+
+/* ── Section headers ── */
+.section { margin-bottom: 70px; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: var(--accent);
+  border-radius: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.section-num.g2 { background: var(--accent2); color: #000; }
+.section-num.g3 { background: var(--accent3); }
+.section-num.g4 { background: var(--accent4); color: #000; }
+.section-num.g5 { background: linear-gradient(135deg,#6c63ff,#00e5a0); }
+
+h2 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+.section > p {
+  color: var(--muted);
+  margin-bottom: 24px;
+  font-weight: 300;
+}
+
+/* ── URL Diagram ── */
+.url-diagram {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 36px 28px;
+  margin-bottom: 32px;
+  overflow: hidden;
+  position: relative;
+}
+
+.url-diagram::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6c63ff, #00e5a0, #ffd166);
+}
+
+.url-bar {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+}
+
+.url-bar-dot { width:10px; height:10px; border-radius:50%; }
+
+.url-parts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(12px, 2.5vw, 16px);
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.url-part {
+  padding: 12px 16px;
+  border-radius: 0;
+  position: relative;
+  cursor: default;
+}
+
+.url-part:first-child { border-radius: 10px 0 0 10px; }
+.url-part:last-child { border-radius: 0 10px 10px 0; }
+
+.up-protocol { background: rgba(108,99,255,.18); color: #a89eff; }
+.up-domain   { background: rgba(0,229,160,.12);  color: #00e5a0; }
+.up-path     { background: rgba(255,107,107,.12); color: #ff8080; }
+.up-param    { background: rgba(255,209,102,.18); color: #ffd166; }
+.up-query    { background: rgba(130,100,255,.12); color: #b89eff; }
+
+.url-labels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.url-label {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.url-label .name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 4px;
+}
+
+.url-label .desc {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+.ul-protocol { border-color: rgba(108,99,255,.3); }
+.ul-protocol .name { color: #a89eff; }
+.ul-domain   { border-color: rgba(0,229,160,.25); }
+.ul-domain .name   { color: #00e5a0; }
+.ul-path     { border-color: rgba(255,107,107,.25); }
+.ul-path .name     { color: #ff8080; }
+.ul-param    { border-color: rgba(255,209,102,.25); }
+.ul-param .name    { color: #ffd166; }
+.ul-query    { border-color: rgba(130,100,255,.25); }
+.ul-query .name    { color: #b89eff; }
+
+/* Route match diagram */
+.route-match {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+  padding: 20px;
+  background: var(--bg3);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.rm-box {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.rm-url    { background: rgba(255,107,107,.1); border-color: rgba(255,107,107,.3); color: #ff8080; }
+.rm-arrow  { color: var(--muted); font-size: 18px; }
+.rm-route  { background: rgba(108,99,255,.1); border-color: rgba(108,99,255,.3); color: #a89eff; }
+.rm-equals { color: var(--accent2); font-size: 18px; }
+.rm-comp   { background: rgba(0,229,160,.1); border-color: rgba(0,229,160,.25); color: #00e5a0; }
+
+/* ── Code blocks ── */
+.code-file {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+
+.code-dots { display:flex; gap:6px; }
+.code-dots span {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.code-dots span:nth-child(1) { background: #ff5f57; }
+.code-dots span:nth-child(2) { background: #febc2e; }
+.code-dots span:nth-child(3) { background: #28c840; }
+
+.code-filename {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+pre {
+  padding: 24px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.75;
+  tab-size: 2;
+}
+
+/* Syntax highlight classes */
+.kw   { color: #c792ea; }   /* keyword */
+.fn   { color: #82aaff; }   /* function */
+.str  { color: #c3e88d; }   /* string */
+.cmt  { color: #546e7a; font-style: italic; }
+.num  { color: #f78c6c; }   /* number */
+.tag  { color: #f07178; }   /* JSX tag */
+.attr { color: #ffcb6b; }   /* JSX attr */
+.var  { color: #e8eaf6; }   /* variable */
+.hl   { background: rgba(108,99,255,.18); display: block; margin: 0 -24px; padding: 0 24px; border-left: 3px solid var(--accent); }
+
+/* ── Info cards ── */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.info-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.info-card .ic-icon {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.info-card h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.info-card p {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 300;
+  line-height: 1.55;
+}
+
+/* ── Hook cards ── */
+.hook-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.hook-card {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.hook-top {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hook-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.hook-card:nth-child(2) .hook-name { color: var(--accent2); }
+.hook-card:nth-child(3) .hook-name { color: var(--accent3); }
+.hook-card:nth-child(4) .hook-name { color: var(--accent4); }
+
+.hook-desc {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.hook-snippet {
+  padding: 14px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #c3e88d;
+}
+
+/* ── Flow diagram ── */
+.flow-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 28px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin: 24px 0;
+}
+
+.flow-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  text-align: center;
+  min-width: 120px;
+}
+
+.flow-box .fb-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.flow-box .fb-sub {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.fb-purple { border-color: rgba(108,99,255,.4); }
+.fb-purple .fb-title { color: #a89eff; }
+.fb-green  { border-color: rgba(0,229,160,.3); }
+.fb-green .fb-title  { color: #00e5a0; }
+.fb-red    { border-color: rgba(255,107,107,.3); }
+.fb-red .fb-title    { color: #ff8080; }
+.fb-yellow { border-color: rgba(255,209,102,.3); }
+.fb-yellow .fb-title { color: #ffd166; }
+
+.flow-arrow {
+  color: var(--muted);
+  font-size: 18px;
+}
+
+/* ── State machine ── */
+.state-machine {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.state-box {
+  flex: 1;
+  min-width: 140px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  text-align: center;
+}
+
+.state-box.s-loading { border-color: rgba(255,209,102,.4); background: rgba(255,209,102,.05); }
+.state-box.s-error   { border-color: rgba(255,107,107,.4); background: rgba(255,107,107,.05); }
+.state-box.s-success { border-color: rgba(0,229,160,.35);  background: rgba(0,229,160,.05); }
+
+.state-icon { font-size: 28px; margin-bottom: 8px; }
+.state-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 6px;
+}
+
+.s-loading .state-label { color: #ffd166; }
+.s-error   .state-label { color: #ff8080; }
+.s-success .state-label { color: #00e5a0; }
+
+.state-desc { font-size: 12px; color: var(--muted); font-weight: 300; }
+
+/* ── Tip box ── */
+.tip {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: rgba(108,99,255,.08);
+  border: 1px solid rgba(108,99,255,.25);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin: 20px 0;
+}
+
+.tip-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+
+.tip p { font-size: 14px; color: #c5bfff; margin: 0; line-height: 1.6; }
+
+.tip.warn { background: rgba(255,209,102,.07); border-color: rgba(255,209,102,.25); }
+.tip.warn p { color: #ffe5a0; }
+
+.tip strong {
+  color: #a89eff;
+  font-weight: 700;
+}
+.tip.warn strong { color: #ffd166; }
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 300;
+}
+
+.footer code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg3);
+  padding: 2px 7px;
+  border-radius: 5px;
+  color: var(--accent2);
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .url-parts { font-size: 11px; }
+  .url-part  { padding: 10px 10px; }
+  pre { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-badge"><span></span> React Router v7 · Оюутны гарын авлага</div>
+    <h1>URL-аас дэлгэц хүртэл<br><em>React Router</em></h1>
+    <p class="hero-sub">URL бүтэц, route тохиргоо, хуудас хооронд шилжих, серверээс өгөгдөл дуудах — алхам алхмаар.</p>
+
+    <div class="toc">
+      <a href="#s1"><span class="toc-num">01</span> URL бүтэц</a>
+      <a href="#s2"><span class="toc-num">02</span> Route тохиргоо</a>
+      <a href="#s3"><span class="toc-num">03</span> Хуудас шилжих</a>
+      <a href="#s4"><span class="toc-num">04</span> URL параметр</a>
+      <a href="#s5"><span class="toc-num">05</span> Өгөгдөл дуудах</a>
+    </div>
+  </div>
+
+  <!-- ── SECTION 1: URL structure ── -->
+  <div class="section" id="s1">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <h2>URL бүтэц — юу гэж уншдаг вэ?</h2>
+    </div>
+    <p>React Router URL-ийг задлан шинжилж, аль компонентийг үзүүлэхийг шийддэг. URL-ийн бүтцийг ойлгох нь хамгийн чухал алхам.</p>
+
+    <div class="url-diagram">
+      <!-- Browser bar -->
+      <div class="url-bar">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span style="color:var(--muted); font-size:12px;">localhost:5173</span>
+        &nbsp;/&nbsp;
+        <span style="color:var(--text);">products/42?tab=detail</span>
+      </div>
+
+      <!-- Colored URL parts -->
+      <div class="url-parts">
+        <div class="url-part up-protocol">http://</div>
+        <div class="url-part up-domain">localhost:5173</div>
+        <div class="url-part up-path">/products/</div>
+        <div class="url-part up-param">42</div>
+        <div class="url-part up-query">?tab=detail</div>
+      </div>
+
+      <!-- Labels -->
+      <div class="url-labels">
+        <div class="url-label ul-protocol">
+          <div class="name">Protocol</div>
+          <div class="desc">Холболтын протокол. Продакшнд <code style="color:#a89eff;font-family:JetBrains Mono,monospace;font-size:11px">https://</code></div>
+        </div>
+        <div class="url-label ul-domain">
+          <div class="name">Domain / Port</div>
+          <div class="desc">Сервер байрладаг хаяг. Локалд localhost</div>
+        </div>
+        <div class="url-label ul-path">
+          <div class="name">Path</div>
+          <div class="desc">Router-ийн тодорхойлдог хэсэг — аль route нийцэхийг энд тулгана</div>
+        </div>
+        <div class="url-label ul-param">
+          <div class="name">:id параметр</div>
+          <div class="desc"><code style="color:#ffd166;font-family:JetBrains Mono,monospace;font-size:11px">useParams()</code>-аар уншдаг динамик утга</div>
+        </div>
+        <div class="url-label ul-query">
+          <div class="name">Query string</div>
+          <div class="desc"><code style="color:#b89eff;font-family:JetBrains Mono,monospace;font-size:11px">useSearchParams()</code>-аар уншдаг нэмэлт параметр</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Route match examples -->
+    <div style="margin-top: 24px;">
+      <p style="color:var(--muted); font-size:14px; margin-bottom: 12px;">Route тулгах жишээ:</p>
+
+      <div class="route-match">
+        <div class="rm-box rm-url">/products</div>
+        <div class="rm-arrow">→</div>
+        <div class="rm-box rm-route">path="/products"</div>
+        <div class="rm-equals">✓</div>
+        <div class="rm-box rm-comp">&lt;ProductList /&gt;</div>
+      </div>
+
+      <div class="route-match">
+        <div class="rm-box rm-url">/products/42</div>
+        <div class="rm-arrow">→</div>
+        <div class="rm-box rm-route">path="/products/:id"</div>
+        <div class="rm-equals">✓</div>
+        <div class="rm-box rm-comp">&lt;ProductDetail /&gt;</div>
+      </div>
+
+      <div class="route-match">
+        <div class="rm-box rm-url">/about</div>
+        <div class="rm-arrow">→</div>
+        <div class="rm-box rm-route">path="*"</div>
+        <div class="rm-equals">✓</div>
+        <div class="rm-box rm-comp">&lt;NotFound /&gt;</div>
+      </div>
+    </div>
+
+    <div class="tip" style="margin-top:20px;">
+      <div class="tip-icon">💡</div>
+      <p><strong>:id</strong> — двоеточийтой эхэлдэг хэсэг нь <em>динамик</em> параметр гэсэн үг. Ямар ч тоо эсвэл текст нийцнэ. <code style="color:#a89eff;font-family:JetBrains Mono,monospace;font-size:12px">:productId</code>, <code style="color:#a89eff;font-family:JetBrains Mono,monospace;font-size:12px">:slug</code> гэх мэт нэрийг чөлөөтэй өгнө.</p>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: Router setup ── -->
+  <div class="section" id="s2">
+    <div class="section-header">
+      <div class="section-num g2">02</div>
+      <h2>createBrowserRouter — Route тохиргоо</h2>
+    </div>
+    <p>Аппын route-уудыг нэг газарт бүртгэнэ. <code style="color:#00e5a0;font-family:JetBrains Mono,monospace;font-size:13px">createBrowserRouter</code> функц объект массив хүлээн авдаг.</p>
+
+    <div class="code-file">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-filename">router.jsx</span>
+      </div>
+      <pre><span class="kw">import</span> { <span class="fn">createBrowserRouter</span> } <span class="kw">from</span> <span class="str">"react-router"</span>;
+<span class="kw">import</span> <span class="var">ProductList</span>   <span class="kw">from</span> <span class="str">"./ProductList"</span>;
+<span class="kw">import</span> <span class="var">ProductDetail</span> <span class="kw">from</span> <span class="str">"./ProductDetail"</span>;
+<span class="kw">import</span> <span class="var">NotFound</span>      <span class="kw">from</span> <span class="str">"./NotFound"</span>;
+
+<span class="kw">const</span> <span class="var">router</span> = <span class="fn">createBrowserRouter</span>([
+  {
+    <span class="attr">path</span>: <span class="str">"/products"</span>,
+    <span class="attr">Component</span>: <span class="var">ProductList</span>,          <span class="cmt">// /products → ProductList</span>
+  },
+  {
+<span class="hl">    <span class="attr">path</span>: <span class="str">"/products/:id"</span>,           <span class="cmt">// :id → динамик параметр</span></span>
+<span class="hl">    <span class="attr">Component</span>: <span class="var">ProductDetail</span>,</span>
+  },
+  {
+    <span class="attr">path</span>: <span class="str">"*"</span>,                        <span class="cmt">// тохирохгүй бол 404</span>
+    <span class="attr">Component</span>: <span class="var">NotFound</span>,
+  },
+]);
+
+<span class="kw">export default</span> <span class="var">router</span>;</pre>
+    </div>
+
+    <div class="code-file">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-filename">main.jsx</span>
+      </div>
+      <pre><span class="kw">import</span> { <span class="var">StrictMode</span> }    <span class="kw">from</span> <span class="str">"react"</span>;
+<span class="kw">import</span> { <span class="fn">createRoot</span> }   <span class="kw">from</span> <span class="str">"react-dom/client"</span>;
+<span class="kw">import</span> { <span class="var">RouterProvider</span> } <span class="kw">from</span> <span class="str">"react-router"</span>;
+<span class="kw">import</span> <span class="var">router</span>            <span class="kw">from</span> <span class="str">"./router"</span>;
+
+<span class="fn">createRoot</span>(<span class="var">document</span>.<span class="fn">getElementById</span>(<span class="str">"root"</span>)).<span class="fn">render</span>(
+  <span class="tag">&lt;StrictMode&gt;</span>
+<span class="hl">    <span class="tag">&lt;RouterProvider</span> <span class="attr">router</span>=<span class="str">{router}</span> <span class="tag">/&gt;</span>   <span class="cmt">// router-ийг энд залгана</span></span>
+  <span class="tag">&lt;/StrictMode&gt;</span>
+);</pre>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="ic-icon">📦</div>
+        <h4>createBrowserRouter</h4>
+        <p>Route-уудыг объект хэлбэрээр тодорхойлно. HTML5 History API ашиглана.</p>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon">🔌</div>
+        <h4>RouterProvider</h4>
+        <p>Router-ийг бүх компонентод хүргэдэг "цахилгааны хайрцаг". Нэг л удаа <code style="font-family:JetBrains Mono,monospace;font-size:11px;color:#00e5a0">main.jsx</code>-д тавина.</p>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon">🏷️</div>
+        <h4>Component: vs element:</h4>
+        <p><code style="font-family:JetBrains Mono,monospace;font-size:11px;color:#a89eff">Component: ProductDetail</code> гэж бичнэ — JSX биш, классын нэр шууд дамжуулна.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: Navigation ── -->
+  <div class="section" id="s3">
+    <div class="section-header">
+      <div class="section-num g3">03</div>
+      <h2>Хуудас хооронд шилжих</h2>
+    </div>
+    <p>React Router шилжихэд хуудас дахин ачаалдаггүй — зөвхөн компонент солигдоно. Хоёр аргаар шилжиж болно.</p>
+
+    <div class="hook-row">
+      <div class="hook-card">
+        <div class="hook-top">
+          <div class="hook-name">&lt;Link&gt;</div>
+          <div class="hook-desc">HTML холбоос шиг ашиглана. Хамгийн энгийн арга.</div>
+        </div>
+        <div class="hook-snippet">to="/products/42"</div>
+      </div>
+      <div class="hook-card">
+        <div class="hook-top">
+          <div class="hook-name">useNavigate()</div>
+          <div class="hook-desc">Товч дарах, нөхцөл шалгасны дараа шилжих.</div>
+        </div>
+        <div class="hook-snippet">navigate("/products/42")</div>
+      </div>
+    </div>
+
+    <div class="code-file">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-filename">ProductList.jsx</span>
+      </div>
+      <pre><span class="kw">import</span> { <span class="var">Link</span>, <span class="fn">useNavigate</span> } <span class="kw">from</span> <span class="str">"react-router"</span>;
+
+<span class="kw">const</span> <span class="var">PRODUCTS</span> = [
+  { <span class="attr">id</span>: <span class="num">1</span>, <span class="attr">name</span>: <span class="str">"Зурагт"</span>,              <span class="attr">price</span>: <span class="str">"890,000₮"</span> },
+  { <span class="attr">id</span>: <span class="num">2</span>, <span class="attr">name</span>: <span class="str">"Утас"</span>,                <span class="attr">price</span>: <span class="str">"1,200,000₮"</span> },
+  { <span class="attr">id</span>: <span class="num">3</span>, <span class="attr">name</span>: <span class="str">"Зөөврийн компьютер"</span>, <span class="attr">price</span>: <span class="str">"2,500,000₮"</span> },
+];
+
+<span class="kw">export default function</span> <span class="fn">ProductList</span>() {
+  <span class="kw">const</span> <span class="var">navigate</span> = <span class="fn">useNavigate</span>();
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      <span class="tag">&lt;h1&gt;</span>Бүтэгдэхүүнүүд<span class="tag">&lt;/h1&gt;</span>
+
+      {<span class="var">PRODUCTS</span>.<span class="fn">map</span>((<span class="var">p</span>) =&gt; (
+        <span class="tag">&lt;div</span> <span class="attr">key</span>=<span class="str">{p.id}</span><span class="tag">&gt;</span>
+          <span class="cmt">{/* Арга 1: Link — HTML &lt;a&gt; шиг боловч хуудас дахин ачаалдаггүй */}</span>
+<span class="hl">          <span class="tag">&lt;Link</span> <span class="attr">to</span>=<span class="str">{`/products/${p.id}`}</span><span class="tag">&gt;</span>{p.name}<span class="tag">&lt;/Link&gt;</span></span>
+
+          <span class="cmt">{/* Арга 2: useNavigate — товч дарах гэх мэт event-т ашиглана */}</span>
+<span class="hl">          <span class="tag">&lt;button</span> <span class="attr">onClick</span>=<span class="str">{() =&gt; navigate(`/products/${p.id}`)}</span><span class="tag">&gt;</span></span>
+<span class="hl">            Дэлгэрэнгүй<span class="tag">&lt;/button&gt;</span></span>
+        <span class="tag">&lt;/div&gt;</span>
+      ))}
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}</pre>
+    </div>
+
+    <div class="tip warn">
+      <div class="tip-icon">⚠️</div>
+      <p><strong>Анхааруулга:</strong> Хуудас шилжихэд <code style="color:#ffd166;font-family:JetBrains Mono,monospace;font-size:12px">&lt;a href="..."&gt;</code> хэзээ ч ашиглаж болохгүй — хуудсыг бүтнээр дахин ачаалдаг. Зөвхөн <code style="color:#ffd166;font-family:JetBrains Mono,monospace;font-size:12px">&lt;Link&gt;</code> эсвэл <code style="color:#ffd166;font-family:JetBrains Mono,monospace;font-size:12px">navigate()</code> ашиглана.</p>
+    </div>
+
+    <div style="margin-top:16px;">
+      <p style="color:var(--muted); font-size:13px; margin-bottom:10px;">navigate() функцийн бусад ашиглалт:</p>
+      <div class="code-file">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-filename">navigate утгууд</span>
+        </div>
+        <pre><span class="fn">navigate</span>(<span class="str">"/products/42"</span>)    <span class="cmt">// шууд хаяг руу явах</span>
+<span class="fn">navigate</span>(<span class="num">-1</span>)               <span class="cmt">// буцах (browser "Back" товч шиг)</span>
+<span class="fn">navigate</span>(<span class="num">1</span>)                <span class="cmt">// дахин урагш явах</span>
+<span class="fn">navigate</span>(<span class="str">"/login"</span>, { <span class="attr">replace</span>: <span class="kw">true</span> })  <span class="cmt">// history-д бичихгүйгээр шилжих</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: useParams ── -->
+  <div class="section" id="s4">
+    <div class="section-header">
+      <div class="section-num g4">04</div>
+      <h2>useParams — URL-аас id уншина</h2>
+    </div>
+    <p>URL-ийн <code style="color:#ffd166;font-family:JetBrains Mono,monospace;font-size:13px">:id</code> хэсгийн утгыг компонент дотроос авахад <code style="color:#ffd166;font-family:JetBrains Mono,monospace;font-size:13px">useParams()</code> hook ашиглана.</p>
+
+    <!-- Visual: URL → useParams -->
+    <div class="flow-diagram">
+      <div class="flow-box fb-red">
+        <div class="fb-title">Browser URL</div>
+        <div class="fb-sub">/products/42</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-purple">
+        <div class="fb-title">React Router</div>
+        <div class="fb-sub">path="/products/:id"</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-green">
+        <div class="fb-title">useParams()</div>
+        <div class="fb-sub">{ id: "42" }</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-yellow">
+        <div class="fb-title">fetch</div>
+        <div class="fb-sub">/api/products/42</div>
+      </div>
+    </div>
+
+    <div class="code-file">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-filename">ProductDetail.jsx — useParams хэсэг</span>
+      </div>
+      <pre><span class="kw">import</span> { <span class="fn">useParams</span>, <span class="fn">useNavigate</span> } <span class="kw">from</span> <span class="str">"react-router"</span>;
+
+<span class="kw">export default function</span> <span class="fn">ProductDetail</span>() {
+  <span class="cmt">// URL /products/42 байвал → { id: "42" }</span>
+  <span class="cmt">// URL /products/99 байвал → { id: "99" }</span>
+<span class="hl">  <span class="kw">const</span> { <span class="var">id</span> } = <span class="fn">useParams</span>();</span>
+
+  <span class="kw">const</span> <span class="var">navigate</span> = <span class="fn">useNavigate</span>();
+
+  <span class="cmt">// id-г fetch-д ашиглана (5-р хэсэгт дэлгэрэнгүй)</span>
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Харах бүтэгдэхүүний id:"</span>, <span class="var">id</span>); <span class="cmt">// "42"</span>
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      <span class="tag">&lt;button</span> <span class="attr">onClick</span>=<span class="str">{() =&gt; navigate(-1)}</span><span class="tag">&gt;</span>← Буцах<span class="tag">&lt;/button&gt;</span>
+      <span class="tag">&lt;h1&gt;</span>Бүтэгдэхүүн #{<span class="var">id</span>}<span class="tag">&lt;/h1&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}</pre>
+    </div>
+
+    <div class="tip">
+      <div class="tip-icon">💡</div>
+      <p><strong>Санах:</strong> <code style="color:#a89eff;font-family:JetBrains Mono,monospace;font-size:12px">useParams()</code> үргэлж <strong>string</strong> буцаадаг. Тоон утга хэрэгтэй бол <code style="color:#a89eff;font-family:JetBrains Mono,monospace;font-size:12px">Number(id)</code> эсвэл <code style="color:#a89eff;font-family:JetBrains Mono,monospace;font-size:12px">parseInt(id)</code>-р хөрвүүлнэ.</p>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5: Fetch ── -->
+  <div class="section" id="s5">
+    <div class="section-header">
+      <div class="section-num g5">05</div>
+      <h2>Серверээс өгөгдөл дуудах</h2>
+    </div>
+    <p>URL-ийн <code style="color:var(--accent2);font-family:JetBrains Mono,monospace;font-size:13px">id</code>-г авч, API-аас өгөгдлийг <code style="color:var(--accent2);font-family:JetBrains Mono,monospace;font-size:13px">useEffect</code> ашиглан дуудна. Fetch-ийн гурван төлөвийг заавал шалгах хэрэгтэй.</p>
+
+    <!-- State machine -->
+    <div class="state-machine">
+      <div class="state-box s-loading">
+        <div class="state-icon">⏳</div>
+        <div class="state-label">Loading</div>
+        <div class="state-desc">Fetch эхлэхэд<br>loading = true</div>
+      </div>
+      <div class="state-box s-error">
+        <div class="state-icon">❌</div>
+        <div class="state-label">Error</div>
+        <div class="state-desc">Сервер алдаа<br>буцаасан үед</div>
+      </div>
+      <div class="state-box s-success">
+        <div class="state-icon">✅</div>
+        <div class="state-label">Success</div>
+        <div class="state-desc">Өгөгдөл<br>амжилттай ирсэн</div>
+      </div>
+    </div>
+
+    <div class="code-file">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-filename">ProductDetail.jsx — бүрэн хувилбар</span>
+      </div>
+      <pre><span class="kw">import</span> { <span class="fn">useEffect</span>, <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">"react"</span>;
+<span class="kw">import</span> { <span class="fn">useParams</span>, <span class="fn">useNavigate</span> } <span class="kw">from</span> <span class="str">"react-router"</span>;
+
+<span class="kw">export default function</span> <span class="fn">ProductDetail</span>() {
+  <span class="kw">const</span> { <span class="var">id</span> }      = <span class="fn">useParams</span>();
+  <span class="kw">const</span> <span class="var">navigate</span>   = <span class="fn">useNavigate</span>();
+
+  <span class="cmt">// Гурван state: өгөгдөл, ачаалалт, алдаа</span>
+  <span class="kw">const</span> [<span class="var">product</span>, <span class="fn">setProduct</span>] = <span class="fn">useState</span>(<span class="kw">null</span>);
+  <span class="kw">const</span> [<span class="var">loading</span>, <span class="fn">setLoading</span>] = <span class="fn">useState</span>(<span class="kw">true</span>);
+  <span class="kw">const</span> [<span class="var">error</span>,   <span class="fn">setError</span>]   = <span class="fn">useState</span>(<span class="kw">null</span>);
+
+<span class="hl">  <span class="fn">useEffect</span>(() =&gt; {</span>
+<span class="hl">    <span class="kw">let</span> <span class="var">cancelled</span> = <span class="kw">false</span>;  <span class="cmt">// cleanup: хуучин request бохирдуулахаас хамгаална</span></span>
+
+    <span class="kw">async function</span> <span class="fn">fetchProduct</span>() {
+      <span class="fn">setLoading</span>(<span class="kw">true</span>);
+      <span class="fn">setError</span>(<span class="kw">null</span>);
+
+      <span class="kw">try</span> {
+        <span class="kw">const</span> <span class="var">res</span>  = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`/api/products/${<span class="var">id</span>}`</span>);
+
+        <span class="cmt">// HTTP алдаа шалгана (404, 500 гэх мэт)</span>
+        <span class="kw">if</span> (!<span class="var">res</span>.<span class="var">ok</span>) <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">`Алдаа: ${<span class="var">res</span>.<span class="var">status</span>}`</span>);
+
+        <span class="kw">const</span> <span class="var">data</span> = <span class="kw">await</span> <span class="var">res</span>.<span class="fn">json</span>();
+        <span class="kw">if</span> (!<span class="var">cancelled</span>) <span class="fn">setProduct</span>(<span class="var">data</span>);
+
+      } <span class="kw">catch</span> (<span class="var">err</span>) {
+        <span class="kw">if</span> (!<span class="var">cancelled</span>) <span class="fn">setError</span>(<span class="var">err</span>.<span class="var">message</span>);
+
+      } <span class="kw">finally</span> {
+        <span class="kw">if</span> (!<span class="var">cancelled</span>) <span class="fn">setLoading</span>(<span class="kw">false</span>);
+      }
+    }
+
+    <span class="fn">fetchProduct</span>();
+
+<span class="hl">    <span class="kw">return</span> () =&gt; { <span class="var">cancelled</span> = <span class="kw">true</span>; };  <span class="cmt">// cleanup функц</span></span>
+<span class="hl">  }, [<span class="var">id</span>]);  <span class="cmt">// ← id өөрчлөгдөх бүрд дахин дуудна</span></span>
+
+  <span class="cmt">// Гурван төлөвийг заавал шалгах</span>
+  <span class="kw">if</span> (<span class="var">loading</span>) <span class="kw">return</span> <span class="tag">&lt;p&gt;</span>Ачааллаж байна...<span class="tag">&lt;/p&gt;</span>;
+  <span class="kw">if</span> (<span class="var">error</span>)   <span class="kw">return</span> <span class="tag">&lt;p&gt;</span>Алдаа: {<span class="var">error</span>}<span class="tag">&lt;/p&gt;</span>;
+  <span class="kw">if</span> (!<span class="var">product</span>) <span class="kw">return</span> <span class="tag">&lt;p&gt;</span>Олдсонгүй.<span class="tag">&lt;/p&gt;</span>;
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      <span class="tag">&lt;button</span> <span class="attr">onClick</span>=<span class="str">{() =&gt; navigate(-1)}</span><span class="tag">&gt;</span>← Буцах<span class="tag">&lt;/button&gt;</span>
+      <span class="tag">&lt;h1&gt;</span>{<span class="var">product</span>.<span class="var">name</span>}<span class="tag">&lt;/h1&gt;</span>
+      <span class="tag">&lt;p&gt;</span>Үнэ: {<span class="var">product</span>.<span class="var">price</span>}₮<span class="tag">&lt;/p&gt;</span>
+      <span class="tag">&lt;p&gt;</span>{<span class="var">product</span>.<span class="var">description</span>}<span class="tag">&lt;/p&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}</pre>
+    </div>
+
+    <div class="tip warn">
+      <div class="tip-icon">⚠️</div>
+      <p><strong>cancelled флаг яагаад хэрэгтэй вэ?</strong> Хэрэглэгч /products/1 рүү ороод шууд /products/2 рүү шилжвэл, 1-р request удаан ирж 2-р state-ийг дарж бичих тохиолдол гарч болно. <code style="color:#ffd166;font-family:JetBrains Mono,monospace;font-size:12px">cancelled = true</code> тависнаар энэ "race condition"-оос хамгаалдаг.</p>
+    </div>
+
+    <div class="tip">
+      <div class="tip-icon">💡</div>
+      <p><strong>res.ok шалгах чухал!</strong> <code style="color:#a89eff;font-family:JetBrains Mono,monospace;font-size:12px">fetch()</code> нь 404 эсвэл 500 хүлээн авсан ч <em>алдаа шиддэггүй</em> — зөвхөн сүлжээний алдаанд л exception гарна. Тиймд <code style="color:#a89eff;font-family:JetBrains Mono,monospace;font-size:12px">if (!res.ok) throw new Error(...)</code> заавал бичих хэрэгтэй.</p>
+    </div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="footer">
+    <p>React Router v7 · <code>import { ... } from "react-router"</code></p>
+    <p style="margin-top:8px">Бүрэн жишээ код · Оюутны гарын авлага · 2025</p>
+  </div>
+
+</div>
+</body>
+</html>
